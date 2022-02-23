@@ -20,12 +20,41 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <GLFW/glfw3.h>
+
+#include <iostream>
+
 #include <CuEngine/CuEngine.hpp>
 
 namespace CuEngine
 {
 int Application::Run() noexcept
 {
-    return 0;
+    if (glfwInit() == GLFW_FALSE)
+    {
+        std::cerr << "Failed to initialize GLFW" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    glfwInitHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwInitHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+    auto window = glfwCreateWindow(800, 600, "Initial", nullptr, nullptr);
+    if (window == nullptr)
+    {
+        std::cerr << "Failed to create a window" << std::endl;
+        glfwTerminate();
+        return EXIT_FAILURE;
+    }
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glfwPollEvents();
+    }
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
+
+    return EXIT_SUCCESS;
 }
 } // namespace CuEngine

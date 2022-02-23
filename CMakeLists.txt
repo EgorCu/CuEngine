@@ -25,6 +25,14 @@ project(CuEngine VERSION 0.0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
+include(FetchContent)
+FetchContent_Declare(
+        GLFW
+        GIT_REPOSITORY https://github.com/glfw/glfw.git
+        GIT_TAG master
+)
+FetchContent_MakeAvailable(GLFW)
+
 # Global set-up
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_compile_options(/W4 /WX)
@@ -36,3 +44,4 @@ endif ()
 
 add_executable(CuEngine Source/main.cpp Source/CuEngine.cpp)
 target_include_directories(CuEngine PRIVATE Include)
+target_link_libraries(CuEngine PRIVATE glfw)
