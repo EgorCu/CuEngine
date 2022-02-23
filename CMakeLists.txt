@@ -44,6 +44,12 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     add_compile_options(-Wall -Wextra -Werror -pedantic)
 endif ()
 
-add_executable(CuEngine Source/main.cpp Source/CuEngine.cpp)
+add_executable(CuEngine
+        Source/main.cpp
+        Source/CuEngine.cpp
+        Source/Platform/Window.cpp
+        Source/Vulkan/Instance.cpp
+        Source/Vulkan/PhysicalDevice.cpp
+        )
 target_include_directories(CuEngine PRIVATE Include)
 target_link_libraries(CuEngine PRIVATE glfw Vulkan::Vulkan)

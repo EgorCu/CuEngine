@@ -20,39 +20,50 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <iostream>
+#include <stdexcept>
 
-#include <CuEngine/CuEngine.hpp>
+#include "Impl/WindowImpl.hpp"
+
 #include <CuEngine/Platform/Window.hpp>
-#include <CuEngine/Vulkan/Instance.hpp>
-#include <CuEngine/Vulkan/PhysicalDevice.hpp>
 
-namespace CuEngine
+namespace CuEngine::Platform
 {
-int Application::Run() noexcept
+Window::Window(std::size_t width, std::size_t height, const char * name) : m_Pimpl(width, height, name)
+{}
+
+Window::Window(Window && other) noexcept : m_Pimpl(std::move(other.m_Pimpl))
+{}
+
+Window & Window::operator=(Window && other) noexcept
 {
-
-    try
+    if (this != &other)
     {
-        auto window   = Platform::Window(800, 600, "Test");
-        auto instance = Vulkan::Instance(window);
-
-        for (auto && physicalDevice : Vulkan::EnumeratePhysicalDevices(instance))
-        {
-            std::cout << physicalDevice.getName() << std::endl;
-        }
-
-        // Main loop
-        while (!window.shouldClose())
-        {
-            window.pollEvents();
-        }
-    }
-    catch (const std::exception & e)
-    {
-        std::cerr << e.what() << std::endl;
+        m_Pimpl = std::move(other.m_Pimpl);
     }
 
-    return EXIT_SUCCESS;
+    return *this;
 }
-} // namespace CuEngine
+
+bool Window::shouldClose() const noexcept
+{
+    return m_Pimpl->shouldClose();
+}
+
+void Window::pollEvents()
+{
+    m_Pimpl->pollEvents();
+}
+
+Window::~Window() noexcept = default;
+
+Impl::Window & Window::getImpl() noexcept
+{
+    return *m_Pimpl;
+}
+
+const Impl::Window & Window::getImpl() const noexcept
+{
+    return *m_Pimpl;
+}
+
+} // namespace CuEngine::Platform

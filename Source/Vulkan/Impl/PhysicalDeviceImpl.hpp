@@ -20,39 +20,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <iostream>
+#include <vulkan/vulkan.h>
 
-#include <CuEngine/CuEngine.hpp>
-#include <CuEngine/Platform/Window.hpp>
-#include <CuEngine/Vulkan/Instance.hpp>
+#include "InstanceImpl.hpp"
+
 #include <CuEngine/Vulkan/PhysicalDevice.hpp>
 
-namespace CuEngine
+namespace CuEngine::Vulkan::Impl
 {
-int Application::Run() noexcept
+class PhysicalDevice
 {
+public:
+    explicit PhysicalDevice(VkPhysicalDevice handle) noexcept : m_Handle(handle)
+    {}
 
-    try
+    [[nodiscard]] std::string getName() const noexcept
     {
-        auto window   = Platform::Window(800, 600, "Test");
-        auto instance = Vulkan::Instance(window);
+        auto properties = VkPhysicalDeviceProperties();
+        vkGetPhysicalDeviceProperties(m_Handle, &properties);
 
-        for (auto && physicalDevice : Vulkan::EnumeratePhysicalDevices(instance))
-        {
-            std::cout << physicalDevice.getName() << std::endl;
-        }
-
-        // Main loop
-        while (!window.shouldClose())
-        {
-            window.pollEvents();
-        }
-    }
-    catch (const std::exception & e)
-    {
-        std::cerr << e.what() << std::endl;
+        return properties.deviceName;
     }
 
-    return EXIT_SUCCESS;
-}
-} // namespace CuEngine
+private:
+    VkPhysicalDevice m_Handle;
+};
+} // namespace CuEngine::Vulkan::Impl

@@ -20,39 +20,37 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <iostream>
+#include "Impl/InstanceImpl.hpp"
 
-#include <CuEngine/CuEngine.hpp>
-#include <CuEngine/Platform/Window.hpp>
-#include <CuEngine/Vulkan/Instance.hpp>
-#include <CuEngine/Vulkan/PhysicalDevice.hpp>
-
-namespace CuEngine
-{
-int Application::Run() noexcept
+namespace CuEngine::Vulkan
 {
 
-    try
-    {
-        auto window   = Platform::Window(800, 600, "Test");
-        auto instance = Vulkan::Instance(window);
+Instance::Instance(const Platform::Window & window) : m_Pimpl(window)
+{}
 
-        for (auto && physicalDevice : Vulkan::EnumeratePhysicalDevices(instance))
-        {
-            std::cout << physicalDevice.getName() << std::endl;
-        }
+Instance::Instance(Instance && other) noexcept : m_Pimpl(std::move(other.m_Pimpl))
+{}
 
-        // Main loop
-        while (!window.shouldClose())
-        {
-            window.pollEvents();
-        }
-    }
-    catch (const std::exception & e)
+Instance & Instance::operator=(Instance && other) noexcept
+{
+    if (this != &other)
     {
-        std::cerr << e.what() << std::endl;
+        m_Pimpl = std::move(other.m_Pimpl);
     }
 
-    return EXIT_SUCCESS;
+    return *this;
 }
-} // namespace CuEngine
+
+Instance::~Instance() noexcept = default;
+
+Impl::Instance & Instance::getImpl() noexcept
+{
+    return *m_Pimpl;
+}
+
+const Impl::Instance & Instance::getImpl() const noexcept
+{
+    return *m_Pimpl;
+}
+
+} // namespace CuEngine::Vulkan

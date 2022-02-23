@@ -20,39 +20,45 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <iostream>
+#pragma once
 
-#include <CuEngine/CuEngine.hpp>
-#include <CuEngine/Platform/Window.hpp>
-#include <CuEngine/Vulkan/Instance.hpp>
-#include <CuEngine/Vulkan/PhysicalDevice.hpp>
+#include <CuEngine/Utility/OptimizedPimpl.hpp>
 
-namespace CuEngine
-{
-int Application::Run() noexcept
+namespace CuEngine::Platform
 {
 
-    try
-    {
-        auto window   = Platform::Window(800, 600, "Test");
-        auto instance = Vulkan::Instance(window);
-
-        for (auto && physicalDevice : Vulkan::EnumeratePhysicalDevices(instance))
-        {
-            std::cout << physicalDevice.getName() << std::endl;
-        }
-
-        // Main loop
-        while (!window.shouldClose())
-        {
-            window.pollEvents();
-        }
-    }
-    catch (const std::exception & e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-
-    return EXIT_SUCCESS;
+namespace Impl
+{
+class Window;
 }
-} // namespace CuEngine
+
+class Window
+{
+public:
+    Window(std::size_t width, std::size_t height, const char * name);
+
+    Window(const Window &) = delete;
+
+    Window(Window && other) noexcept;
+
+    Window & operator=(const Window &) = delete;
+
+    Window & operator=(Window && other) noexcept;
+
+    [[nodiscard]] bool shouldClose() const noexcept;
+
+    void pollEvents();
+
+    ~Window() noexcept;
+
+    [[nodiscard]] Impl::Window & getImpl() noexcept;
+
+    [[nodiscard]] const Impl::Window & getImpl() const noexcept;
+
+private:
+    static constexpr auto memorySize      = 8u;
+    static constexpr auto memoryAlignment = 8u;
+
+    OptimizedPimpl<Impl::Window, memorySize, memoryAlignment> m_Pimpl;
+};
+} // namespace CuEngine::Platform
