@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 #include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
 
 #include <iostream>
 
@@ -28,8 +29,12 @@
 
 namespace CuEngine
 {
+
+static VkInstance g_Instance = VK_NULL_HANDLE;
+
 int Application::Run() noexcept
 {
+    // Initialize GLFW
     if (glfwInit() == GLFW_FALSE)
     {
         std::cerr << "Failed to initialize GLFW" << std::endl;
@@ -47,11 +52,39 @@ int Application::Run() noexcept
         return EXIT_FAILURE;
     }
 
+    // Initialize Vulkan
+    auto app_info = VkApplicationInfo{ .sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+                                       .pNext              = nullptr,
+                                       .pApplicationName   = "CuEngine",
+                                       .applicationVersion = VK_MAKE_VERSION(0, 0, 1),
+                                       .engineVersion      = VK_MAKE_VERSION(0, 0, 1),
+                                       .apiVersion         = VK_API_VERSION_1_0 };
+
+    auto instance_info = VkInstanceCreateInfo{ .sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+                                               .pNext                   = nullptr,
+                                               .flags                   = {},
+                                               .pApplicationInfo        = &app_info,
+                                               .enabledLayerCount       = 0,
+                                               .ppEnabledLayerNames     = nullptr,
+                                               .enabledExtensionCount   = 0,
+                                               .ppEnabledExtensionNames = nullptr };
+
+    if (vkCreateInstance(&instance_info, nullptr, &g_Instance) != VK_SUCCESS)
+    {
+        std::cerr << "Failed to create Vulkan instance" << std::endl;
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        return EXIT_FAILURE;
+    }
+
+    // Main loop
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
     }
 
+    // Cleanup
+    vkDestroyInstance(g_Instance, nullptr);
     glfwDestroyWindow(window);
     glfwTerminate();
 

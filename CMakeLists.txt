@@ -33,6 +33,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(GLFW)
 
+find_package(Vulkan REQUIRED)
+
 # Global set-up
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_compile_options(/W4 /WX)
@@ -44,4 +46,4 @@ endif ()
 
 add_executable(CuEngine Source/main.cpp Source/CuEngine.cpp)
 target_include_directories(CuEngine PRIVATE Include)
-target_link_libraries(CuEngine PRIVATE glfw)
+target_link_libraries(CuEngine PRIVATE glfw Vulkan::Vulkan)
