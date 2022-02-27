@@ -22,6 +22,11 @@
 
 #pragma once
 
+#include <cstdint>
+#include <memory>
+#include <new>
+#include <type_traits>
+
 namespace CuEngine
 {
 template <typename ImplT, std::size_t memSize, std::size_t alignment>

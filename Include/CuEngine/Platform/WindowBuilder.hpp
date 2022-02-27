@@ -22,39 +22,52 @@
 
 #pragma once
 
+#include <CuEngine/Platform/System.hpp>
 #include <CuEngine/Platform/Window.hpp>
+#include <CuEngine/Utility/OptimizedPimpl.hpp>
 
+#include <cstdint>
 #include <string>
-#include <vector>
 
-namespace CuEngine::Vulkan
+namespace CuEngine::Platform
 {
+
 namespace Impl
 {
-class Instance;
+class WindowBuilder;
 }
 
-class Instance
+class WindowBuilder
 {
 public:
-    explicit Instance(Impl::Instance && instance) noexcept;
+    WindowBuilder();
 
-    Instance(const Instance &) = delete;
+    WindowBuilder(const WindowBuilder & other);
 
-    Instance(Instance && other) noexcept;
+    WindowBuilder(WindowBuilder && other) noexcept;
 
-    Instance & operator=(const Instance &) = delete;
+    WindowBuilder & operator=(const WindowBuilder & other);
 
-    Instance & operator=(Instance && other) noexcept;
+    WindowBuilder & operator=(WindowBuilder && other) noexcept;
 
-    ~Instance() noexcept;
+    ~WindowBuilder() noexcept;
 
-    [[nodiscard]] Impl::Instance & GetImpl() noexcept;
+    WindowBuilder & SetSystem(System & system) noexcept;
+
+    WindowBuilder & SetWidth(std::size_t width) noexcept;
+
+    WindowBuilder & SetHeight(std::size_t height) noexcept;
+
+    WindowBuilder & SetTitle(const std::string & title) noexcept;
+
+    [[nodiscard]] Window Build() const;
+
+    [[nodiscard]] Impl::WindowBuilder & GetImpl() noexcept;
 
 private:
-    static constexpr auto memorySize      = sizeof(void *);
-    static constexpr auto memoryAlignment = alignof(void *);
+    static constexpr auto memorySize      = sizeof(std::size_t) * 2 + sizeof(std::string);
+    static constexpr auto memoryAlignment = std::max(alignof(std::size_t), alignof(std::string));
 
-    OptimizedPimpl<Impl::Instance, memorySize, memoryAlignment> m_Pimpl;
+    OptimizedPimpl<Impl::WindowBuilder, memorySize, memoryAlignment> m_Pimpl;
 };
-} // namespace CuEngine::Vulkan
+} // namespace CuEngine::Platform

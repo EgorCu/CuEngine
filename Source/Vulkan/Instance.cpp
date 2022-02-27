@@ -25,30 +25,16 @@
 namespace CuEngine::Vulkan
 {
 
-Instance::Instance(const Platform::Window & window) : m_Pimpl(window)
+Instance::Instance(Impl::Instance && instance) noexcept : m_Pimpl(std::move(instance))
 {}
 
-Instance::Instance(Instance && other) noexcept : m_Pimpl(std::move(other.m_Pimpl))
-{}
+Instance::Instance(Instance && other) noexcept = default;
 
-Instance & Instance::operator=(Instance && other) noexcept
-{
-    if (this != &other)
-    {
-        m_Pimpl = std::move(other.m_Pimpl);
-    }
-
-    return *this;
-}
+Instance & Instance::operator=(Instance && other) noexcept = default;
 
 Instance::~Instance() noexcept = default;
 
-Impl::Instance & Instance::getImpl() noexcept
-{
-    return *m_Pimpl;
-}
-
-const Impl::Instance & Instance::getImpl() const noexcept
+Impl::Instance & Instance::GetImpl() noexcept
 {
     return *m_Pimpl;
 }

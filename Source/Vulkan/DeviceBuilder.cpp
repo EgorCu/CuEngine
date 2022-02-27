@@ -20,41 +20,43 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
-
-#include <CuEngine/Platform/Window.hpp>
-
-#include <string>
-#include <vector>
+#include "Impl/DeviceBuilderImpl.hpp"
 
 namespace CuEngine::Vulkan
 {
-namespace Impl
+DeviceBuilder::DeviceBuilder() noexcept = default;
+
+DeviceBuilder::DeviceBuilder(const DeviceBuilder & other) = default;
+
+DeviceBuilder::DeviceBuilder(DeviceBuilder && other) noexcept = default;
+
+DeviceBuilder & DeviceBuilder::operator=(const DeviceBuilder & other) = default;
+
+DeviceBuilder & DeviceBuilder::operator=(DeviceBuilder && other) noexcept = default;
+
+DeviceBuilder::~DeviceBuilder() noexcept = default;
+
+DeviceBuilder & DeviceBuilder::SetPhysicalDevice(PhysicalDevice & physicalDevice) noexcept
 {
-class Instance;
+    m_Pimpl->SetPhysicalDevice(physicalDevice.GetImpl());
+
+    return *this;
 }
 
-class Instance
+DeviceBuilder & DeviceBuilder::AddQueues(const QueueFamily& queueFamily, const std::vector<float>& queuePriorities)
 {
-public:
-    explicit Instance(Impl::Instance && instance) noexcept;
+    m_Pimpl->AddQueues(queueFamily.GetImpl(), queuePriorities);
 
-    Instance(const Instance &) = delete;
+    return *this;
+}
 
-    Instance(Instance && other) noexcept;
+Device DeviceBuilder::Build() const
+{
+    return Device(m_Pimpl->Build());
+}
 
-    Instance & operator=(const Instance &) = delete;
-
-    Instance & operator=(Instance && other) noexcept;
-
-    ~Instance() noexcept;
-
-    [[nodiscard]] Impl::Instance & GetImpl() noexcept;
-
-private:
-    static constexpr auto memorySize      = sizeof(void *);
-    static constexpr auto memoryAlignment = alignof(void *);
-
-    OptimizedPimpl<Impl::Instance, memorySize, memoryAlignment> m_Pimpl;
-};
+Impl::DeviceBuilder & DeviceBuilder::GetImpl() noexcept
+{
+    return *m_Pimpl;
+}
 } // namespace CuEngine::Vulkan

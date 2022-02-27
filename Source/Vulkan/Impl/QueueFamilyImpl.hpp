@@ -22,39 +22,38 @@
 
 #pragma once
 
-#include <CuEngine/Platform/Window.hpp>
+#include <vulkan/vulkan.h>
 
-#include <string>
-#include <vector>
+#include "PhysicalDeviceImpl.hpp"
 
-namespace CuEngine::Vulkan
+#include <CuEngine/Vulkan/QueueFamily.hpp>
+
+namespace CuEngine::Vulkan::Impl
 {
-namespace Impl
-{
-class Instance;
-}
-
-class Instance
+class QueueFamily
 {
 public:
-    explicit Instance(Impl::Instance && instance) noexcept;
+    explicit QueueFamily(const VkQueueFamilyProperties & properties, std::uint32_t index) noexcept
+        : m_Properties(properties), m_Index(index)
+    {}
 
-    Instance(const Instance &) = delete;
+    [[nodiscard]] bool HasGraphicsSupport() const noexcept
+    {
+        return m_Properties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
+    }
 
-    Instance(Instance && other) noexcept;
+    [[nodiscard]] bool GetIndex() const noexcept
+    {
+        return m_Index;
+    }
 
-    Instance & operator=(const Instance &) = delete;
-
-    Instance & operator=(Instance && other) noexcept;
-
-    ~Instance() noexcept;
-
-    [[nodiscard]] Impl::Instance & GetImpl() noexcept;
+    [[nodiscard]] bool operator<(const QueueFamily & rhs) const noexcept
+    {
+        return m_Index < rhs.m_Index;
+    }
 
 private:
-    static constexpr auto memorySize      = sizeof(void *);
-    static constexpr auto memoryAlignment = alignof(void *);
-
-    OptimizedPimpl<Impl::Instance, memorySize, memoryAlignment> m_Pimpl;
+    VkQueueFamilyProperties m_Properties;
+    std::uint32_t           m_Index;
 };
-} // namespace CuEngine::Vulkan
+} // namespace CuEngine::Vulkan::Impl

@@ -22,39 +22,47 @@
 
 #pragma once
 
-#include <CuEngine/Platform/Window.hpp>
+#include <CuEngine/Utility/OptimizedPimpl.hpp>
+#include <CuEngine/Vulkan/PhysicalDevice.hpp>
 
-#include <string>
+#include <string_view>
 #include <vector>
 
 namespace CuEngine::Vulkan
 {
 namespace Impl
 {
-class Instance;
+class QueueFamily;
 }
 
-class Instance
+class QueueFamily
 {
 public:
-    explicit Instance(Impl::Instance && instance) noexcept;
+    explicit QueueFamily(Impl::QueueFamily && queueFamily) noexcept;
 
-    Instance(const Instance &) = delete;
+    QueueFamily(const QueueFamily & other) noexcept;
 
-    Instance(Instance && other) noexcept;
+    QueueFamily(QueueFamily && other) noexcept;
 
-    Instance & operator=(const Instance &) = delete;
+    QueueFamily & operator=(const QueueFamily & other) noexcept;
 
-    Instance & operator=(Instance && other) noexcept;
+    QueueFamily & operator=(QueueFamily && other) noexcept;
 
-    ~Instance() noexcept;
+    ~QueueFamily() noexcept;
 
-    [[nodiscard]] Impl::Instance & GetImpl() noexcept;
+    [[nodiscard]] bool HasGraphicsSupport() const noexcept;
+
+    [[nodiscard]] Impl::QueueFamily & GetImpl() noexcept;
+
+    [[nodiscard]] const Impl::QueueFamily & GetImpl() const noexcept;
+
+    [[nodiscard]] static std::vector<QueueFamily> Enumerate(PhysicalDevice & queueFamiliesProperty);
 
 private:
-    static constexpr auto memorySize      = sizeof(void *);
-    static constexpr auto memoryAlignment = alignof(void *);
+    static constexpr auto memorySize      = 28u;
+    static constexpr auto memoryAlignment = 4u;
 
-    OptimizedPimpl<Impl::Instance, memorySize, memoryAlignment> m_Pimpl;
+    OptimizedPimpl<Impl::QueueFamily, memorySize, memoryAlignment> m_Pimpl;
 };
+
 } // namespace CuEngine::Vulkan

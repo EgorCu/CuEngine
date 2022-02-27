@@ -20,41 +20,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
-
-#include <CuEngine/Platform/Window.hpp>
-
-#include <string>
-#include <vector>
+#include "Impl/DeviceImpl.hpp"
 
 namespace CuEngine::Vulkan
 {
-namespace Impl
+
+Device::Device(Impl::Device && device) noexcept : m_Pimpl(std::move(device))
+{}
+
+Device::Device(Device && other) noexcept = default;
+
+Device & Device::operator=(Device && other) noexcept = default;
+
+Device::~Device() noexcept = default;
+
+Impl::Device & Device::getImpl() noexcept
 {
-class Instance;
+    return *m_Pimpl;
 }
 
-class Instance
-{
-public:
-    explicit Instance(Impl::Instance && instance) noexcept;
-
-    Instance(const Instance &) = delete;
-
-    Instance(Instance && other) noexcept;
-
-    Instance & operator=(const Instance &) = delete;
-
-    Instance & operator=(Instance && other) noexcept;
-
-    ~Instance() noexcept;
-
-    [[nodiscard]] Impl::Instance & GetImpl() noexcept;
-
-private:
-    static constexpr auto memorySize      = sizeof(void *);
-    static constexpr auto memoryAlignment = alignof(void *);
-
-    OptimizedPimpl<Impl::Instance, memorySize, memoryAlignment> m_Pimpl;
-};
 } // namespace CuEngine::Vulkan

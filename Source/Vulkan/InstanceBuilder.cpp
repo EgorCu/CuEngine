@@ -20,41 +20,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
-
-#include <CuEngine/Platform/Window.hpp>
-
-#include <string>
-#include <vector>
+#include "Impl/InstanceBuilderImpl.hpp"
 
 namespace CuEngine::Vulkan
 {
-namespace Impl
+
+InstanceBuilder::InstanceBuilder() noexcept = default;
+
+InstanceBuilder::InstanceBuilder(const InstanceBuilder & other) noexcept = default;
+
+InstanceBuilder::InstanceBuilder(InstanceBuilder && other) noexcept = default;
+
+InstanceBuilder & InstanceBuilder::operator=(const InstanceBuilder & other) noexcept = default;
+
+InstanceBuilder & InstanceBuilder::operator=(InstanceBuilder && other) noexcept = default;
+
+InstanceBuilder::~InstanceBuilder() noexcept = default;
+
+Instance InstanceBuilder::Build() const
 {
-class Instance;
+    return Instance(m_Pimpl->Build());
 }
 
-class Instance
+Impl::InstanceBuilder & InstanceBuilder::GetImpl() noexcept
 {
-public:
-    explicit Instance(Impl::Instance && instance) noexcept;
+    return *m_Pimpl;
+}
 
-    Instance(const Instance &) = delete;
-
-    Instance(Instance && other) noexcept;
-
-    Instance & operator=(const Instance &) = delete;
-
-    Instance & operator=(Instance && other) noexcept;
-
-    ~Instance() noexcept;
-
-    [[nodiscard]] Impl::Instance & GetImpl() noexcept;
-
-private:
-    static constexpr auto memorySize      = sizeof(void *);
-    static constexpr auto memoryAlignment = alignof(void *);
-
-    OptimizedPimpl<Impl::Instance, memorySize, memoryAlignment> m_Pimpl;
-};
 } // namespace CuEngine::Vulkan

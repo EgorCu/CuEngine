@@ -22,39 +22,40 @@
 
 #pragma once
 
-#include <CuEngine/Platform/Window.hpp>
+#include <CuEngine/Utility/OptimizedPimpl.hpp>
 
-#include <string>
+#include <string_view>
 #include <vector>
 
 namespace CuEngine::Vulkan
 {
 namespace Impl
 {
-class Instance;
+class Device;
 }
 
-class Instance
+class Device
 {
 public:
-    explicit Instance(Impl::Instance && instance) noexcept;
+    explicit Device(Impl::Device && device) noexcept;
 
-    Instance(const Instance &) = delete;
+    Device(const Device &) noexcept = delete;
 
-    Instance(Instance && other) noexcept;
+    Device(Device && other) noexcept;
 
-    Instance & operator=(const Instance &) = delete;
+    Device & operator=(const Device &) noexcept = delete;
 
-    Instance & operator=(Instance && other) noexcept;
+    Device & operator=(Device && other) noexcept;
 
-    ~Instance() noexcept;
+    ~Device() noexcept;
 
-    [[nodiscard]] Impl::Instance & GetImpl() noexcept;
+    [[nodiscard]] Impl::Device & getImpl() noexcept;
 
 private:
     static constexpr auto memorySize      = sizeof(void *);
     static constexpr auto memoryAlignment = alignof(void *);
 
-    OptimizedPimpl<Impl::Instance, memorySize, memoryAlignment> m_Pimpl;
+    OptimizedPimpl<Impl::Device, memorySize, memoryAlignment> m_Pimpl;
 };
+
 } // namespace CuEngine::Vulkan

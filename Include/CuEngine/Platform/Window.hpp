@@ -35,7 +35,7 @@ class Window;
 class Window
 {
 public:
-    Window(std::size_t width, std::size_t height, const char * name);
+    explicit Window(Impl::Window && window) noexcept;
 
     Window(const Window &) = delete;
 
@@ -45,19 +45,17 @@ public:
 
     Window & operator=(Window && other) noexcept;
 
-    [[nodiscard]] bool shouldClose() const noexcept;
+    [[nodiscard]] bool ShouldClose() const noexcept;
 
-    void pollEvents();
+    void PollEvents() noexcept;
 
     ~Window() noexcept;
 
-    [[nodiscard]] Impl::Window & getImpl() noexcept;
-
-    [[nodiscard]] const Impl::Window & getImpl() const noexcept;
+    [[nodiscard]] Impl::Window & GetImpl() noexcept;
 
 private:
-    static constexpr auto memorySize      = 8u;
-    static constexpr auto memoryAlignment = 8u;
+    static constexpr auto memorySize      = sizeof(void *);
+    static constexpr auto memoryAlignment = alignof(void *);
 
     OptimizedPimpl<Impl::Window, memorySize, memoryAlignment> m_Pimpl;
 };

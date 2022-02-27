@@ -22,39 +22,44 @@
 
 #pragma once
 
-#include <CuEngine/Platform/Window.hpp>
+#include <vulkan/vulkan.h>
 
-#include <string>
-#include <vector>
+#include "PhysicalDeviceImpl.hpp"
+#include "QueueFamilyImpl.hpp"
 
-namespace CuEngine::Vulkan
+#include <CuEngine/Vulkan/Device.hpp>
+
+namespace CuEngine::Vulkan::Impl
 {
-namespace Impl
-{
-class Instance;
-}
-
-class Instance
+class Device
 {
 public:
-    explicit Instance(Impl::Instance && instance) noexcept;
+    explicit Device(VkDevice device) noexcept : m_Handle(device)
+    {}
 
-    Instance(const Instance &) = delete;
+    Device(const Device & other) = delete;
 
-    Instance(Instance && other) noexcept;
+    Device(Device && other) noexcept : m_Handle(std::exchange(other.m_Handle, VK_NULL_HANDLE))
+    {}
 
-    Instance & operator=(const Instance &) = delete;
+    Device & operator=(const Device & other) = delete;
 
-    Instance & operator=(Instance && other) noexcept;
+    Device & operator=(Device && other) noexcept
+    {
+        if (this != &other)
+        {
+            std::swap(m_Handle, other.m_Handle);
+        }
 
-    ~Instance() noexcept;
+        return *this;
+    }
 
-    [[nodiscard]] Impl::Instance & GetImpl() noexcept;
+    ~Device() noexcept
+    {
+        vkDestroyDevice(m_Handle, nullptr);
+    }
 
 private:
-    static constexpr auto memorySize      = sizeof(void *);
-    static constexpr auto memoryAlignment = alignof(void *);
-
-    OptimizedPimpl<Impl::Instance, memorySize, memoryAlignment> m_Pimpl;
+    VkDevice m_Handle;
 };
-} // namespace CuEngine::Vulkan
+} // namespace CuEngine::Vulkan::Impl

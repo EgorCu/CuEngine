@@ -20,41 +20,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
+#include "Impl/SystemBuilderImpl.hpp"
 
-#include <CuEngine/Platform/Window.hpp>
-
-#include <string>
-#include <vector>
-
-namespace CuEngine::Vulkan
+namespace CuEngine::Platform
 {
-namespace Impl
+SystemBuilder::SystemBuilder() noexcept : m_Pimpl()
+{}
+
+SystemBuilder::SystemBuilder(SystemBuilder && other) noexcept = default;
+
+SystemBuilder & SystemBuilder::operator=(SystemBuilder && other) noexcept = default;
+
+SystemBuilder::~SystemBuilder() noexcept = default;
+
+System SystemBuilder::Build() const
 {
-class Instance;
+    return System(m_Pimpl->Build());
 }
 
-class Instance
+Impl::SystemBuilder & SystemBuilder::GetImpl() noexcept
 {
-public:
-    explicit Instance(Impl::Instance && instance) noexcept;
+    return *m_Pimpl;
+}
 
-    Instance(const Instance &) = delete;
-
-    Instance(Instance && other) noexcept;
-
-    Instance & operator=(const Instance &) = delete;
-
-    Instance & operator=(Instance && other) noexcept;
-
-    ~Instance() noexcept;
-
-    [[nodiscard]] Impl::Instance & GetImpl() noexcept;
-
-private:
-    static constexpr auto memorySize      = sizeof(void *);
-    static constexpr auto memoryAlignment = alignof(void *);
-
-    OptimizedPimpl<Impl::Instance, memorySize, memoryAlignment> m_Pimpl;
-};
-} // namespace CuEngine::Vulkan
+} // namespace CuEngine::Platform

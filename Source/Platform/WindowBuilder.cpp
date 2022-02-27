@@ -22,32 +22,66 @@
 
 #include <stdexcept>
 
-#include "Impl/WindowImpl.hpp"
-
-#include <CuEngine/Platform/Window.hpp>
+#include "Impl/WindowBuilderImpl.hpp"
 
 namespace CuEngine::Platform
 {
-Window::Window(Impl::Window && window) noexcept : m_Pimpl(std::move(window))
+WindowBuilder::WindowBuilder() : m_Pimpl()
 {}
 
-Window::Window(Window && other) noexcept = default;
+WindowBuilder::WindowBuilder(const WindowBuilder & other) = default;
 
-Window & Window::operator=(Window && other) noexcept = default;
+WindowBuilder::WindowBuilder(WindowBuilder && other) noexcept : m_Pimpl(std::move(other.m_Pimpl))
+{}
 
-Window::~Window() noexcept = default;
+WindowBuilder & WindowBuilder::operator=(const WindowBuilder & other) = default;
 
-bool Window::ShouldClose() const noexcept
+WindowBuilder & WindowBuilder::operator=(WindowBuilder && other) noexcept
 {
-    return m_Pimpl->ShouldClose();
+    if (this != &other)
+    {
+        m_Pimpl = std::move(other.m_Pimpl);
+    }
+
+    return *this;
 }
 
-void Window::PollEvents() noexcept
+WindowBuilder::~WindowBuilder() noexcept = default;
+
+WindowBuilder & WindowBuilder::SetSystem(System & system) noexcept
 {
-    m_Pimpl->PollEvents();
+    m_Pimpl->SetSystem(system.GetImpl());
+
+    return *this;
 }
 
-Impl::Window & Window::GetImpl() noexcept
+WindowBuilder & WindowBuilder::SetWidth(std::size_t width) noexcept
+{
+    m_Pimpl->SetWidth(width);
+
+    return *this;
+}
+
+WindowBuilder & WindowBuilder::SetHeight(std::size_t height) noexcept
+{
+    m_Pimpl->SetHeight(height);
+
+    return *this;
+}
+
+WindowBuilder & WindowBuilder::SetTitle(const std::string & title) noexcept
+{
+    m_Pimpl->SetTitle(title);
+
+    return *this;
+}
+
+Window WindowBuilder::Build() const
+{
+    return Window(m_Pimpl->Build());
+}
+
+Impl::WindowBuilder & WindowBuilder::GetImpl() noexcept
 {
     return *m_Pimpl;
 }

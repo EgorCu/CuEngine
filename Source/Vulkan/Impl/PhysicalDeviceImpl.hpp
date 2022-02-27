@@ -20,6 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#pragma once
+
 #include <vulkan/vulkan.h>
 
 #include "InstanceImpl.hpp"
@@ -34,12 +36,27 @@ public:
     explicit PhysicalDevice(VkPhysicalDevice handle) noexcept : m_Handle(handle)
     {}
 
-    [[nodiscard]] std::string getName() const noexcept
+    PhysicalDevice(const PhysicalDevice &) noexcept = default;
+
+    PhysicalDevice(PhysicalDevice &&) noexcept = default;
+
+    PhysicalDevice & operator=(const PhysicalDevice &) noexcept = default;
+
+    PhysicalDevice & operator=(PhysicalDevice &&) noexcept = default;
+
+    ~PhysicalDevice() noexcept = default;
+
+    [[nodiscard]] std::string GetName() const
     {
         auto properties = VkPhysicalDeviceProperties();
         vkGetPhysicalDeviceProperties(m_Handle, &properties);
 
         return properties.deviceName;
+    }
+
+    [[nodiscard]] VkPhysicalDevice GetHandle() const noexcept
+    {
+        return m_Handle;
     }
 
 private:

@@ -27,79 +27,52 @@
 namespace CuEngine::Vulkan
 {
 
-PhysicalDevice::PhysicalDevice(const Impl::PhysicalDevice & device) noexcept : m_Pimpl(device)
+PhysicalDevice::PhysicalDevice(Impl::PhysicalDevice && device) noexcept : m_Pimpl(std::move(device))
 {}
 
 PhysicalDevice::PhysicalDevice(const PhysicalDevice & other) noexcept = default;
 
-PhysicalDevice::PhysicalDevice(PhysicalDevice && other) noexcept : m_Pimpl(std::move(other.m_Pimpl))
-{}
+PhysicalDevice::PhysicalDevice(PhysicalDevice && other) noexcept = default;
 
-PhysicalDevice & PhysicalDevice::operator=(const PhysicalDevice & other) noexcept
-{
-    if (this != &other)
-    {
-        m_Pimpl = other.m_Pimpl;
-    }
+PhysicalDevice & PhysicalDevice::operator=(const PhysicalDevice & other) noexcept = default;
 
-    return *this;
-}
-
-PhysicalDevice & PhysicalDevice::operator=(PhysicalDevice && other) noexcept
-{
-    if (this != &other)
-    {
-        m_Pimpl = std::move(other.m_Pimpl);
-    }
-
-    return *this;
-}
+PhysicalDevice & PhysicalDevice::operator=(PhysicalDevice && other) noexcept = default;
 
 PhysicalDevice::~PhysicalDevice() noexcept = default;
 
-std::string PhysicalDevice::getName() const noexcept
+std::string PhysicalDevice::GetName() const
 {
-    return m_Pimpl->getName();
+    return m_Pimpl->GetName();
 }
 
-Impl::PhysicalDevice & PhysicalDevice::getImpl() noexcept
+Impl::PhysicalDevice & PhysicalDevice::GetImpl() noexcept
 {
     return *m_Pimpl;
 }
 
-const Impl::PhysicalDevice & PhysicalDevice::getImpl() const noexcept
-{
-    return *m_Pimpl;
-}
-std::vector<PhysicalDevice> EnumeratePhysicalDevices(const Instance & instance)
+std::vector<PhysicalDevice> PhysicalDevice::Enumerate(Instance & instance)
 {
     auto count = std::uint32_t();
-    if (vkEnumeratePhysicalDevices(instance.getImpl().getHandle(), &count, nullptr) != VK_SUCCESS)
+    if (vkEnumeratePhysicalDevices(instance.GetImpl().GetHandle(), &count, nullptr) != VK_SUCCESS)
     {
         throw std::runtime_error("No physical device found");
     }
 
-    auto device_pointers = std::vector<VkPhysicalDevice>(count);
-    if (vkEnumeratePhysicalDevices(instance.getImpl().getHandle(), &count, device_pointers.data()) != VK_SUCCESS)
+    auto devicePointers = std::vector<VkPhysicalDevice>(count);
+    if (vkEnumeratePhysicalDevices(instance.GetImpl().GetHandle(), &count, devicePointers.data()) != VK_SUCCESS)
     {
         throw std::runtime_error("No physical device found");
     }
 
     auto devices = std::vector<PhysicalDevice>();
     devices.reserve(count);
-    std::ranges::transform(device_pointers, std::back_inserter(devices),
-                           [](auto device_handle)
+    std::ranges::transform(devicePointers, std::back_inserter(devices),
+                           [](auto deviceHandle)
                            {
-                               return PhysicalDevice(Impl::PhysicalDevice(device_handle));
+                               return PhysicalDevice(Impl::PhysicalDevice(deviceHandle));
                            });
 
     return devices;
 }
-
-//std::vector<PhysicalDevice> GetPhysicalDevices(const Instance & instance)
-//{
-//
-
-//}
 
 } // namespace CuEngine::Vulkan

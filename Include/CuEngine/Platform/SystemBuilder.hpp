@@ -22,39 +22,40 @@
 
 #pragma once
 
-#include <CuEngine/Platform/Window.hpp>
+#include <CuEngine/Platform/System.hpp>
+#include <CuEngine/Utility/OptimizedPimpl.hpp>
 
-#include <string>
-#include <vector>
-
-namespace CuEngine::Vulkan
+namespace CuEngine::Platform
 {
+
 namespace Impl
 {
-class Instance;
+class SystemBuilder;
 }
 
-class Instance
+class SystemBuilder
 {
 public:
-    explicit Instance(Impl::Instance && instance) noexcept;
+    explicit SystemBuilder() noexcept;
 
-    Instance(const Instance &) = delete;
+    SystemBuilder(const SystemBuilder &) = delete;
 
-    Instance(Instance && other) noexcept;
+    SystemBuilder(SystemBuilder && other) noexcept;
 
-    Instance & operator=(const Instance &) = delete;
+    SystemBuilder & operator=(const SystemBuilder &) = delete;
 
-    Instance & operator=(Instance && other) noexcept;
+    SystemBuilder & operator=(SystemBuilder && other) noexcept;
 
-    ~Instance() noexcept;
+    ~SystemBuilder() noexcept;
 
-    [[nodiscard]] Impl::Instance & GetImpl() noexcept;
+    [[nodiscard]] System Build() const;
+
+    [[nodiscard]] Impl::SystemBuilder & GetImpl() noexcept;
 
 private:
-    static constexpr auto memorySize      = sizeof(void *);
-    static constexpr auto memoryAlignment = alignof(void *);
+    static constexpr auto memorySize      = sizeof(char);
+    static constexpr auto memoryAlignment = alignof(char);
 
-    OptimizedPimpl<Impl::Instance, memorySize, memoryAlignment> m_Pimpl;
+    OptimizedPimpl<Impl::SystemBuilder, memorySize, memoryAlignment> m_Pimpl;
 };
-} // namespace CuEngine::Vulkan
+} // namespace CuEngine::Platform

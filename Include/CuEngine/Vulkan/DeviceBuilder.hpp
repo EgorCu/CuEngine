@@ -22,39 +22,52 @@
 
 #pragma once
 
-#include <CuEngine/Platform/Window.hpp>
+#include <CuEngine/Utility/OptimizedPimpl.hpp>
+#include <CuEngine/Vulkan/Device.hpp>
+#include <CuEngine/Vulkan/PhysicalDevice.hpp>
+#include <CuEngine/Vulkan/QueueFamily.hpp>
 
-#include <string>
+#include <map>
+#include <utility>
 #include <vector>
 
 namespace CuEngine::Vulkan
 {
 namespace Impl
 {
-class Instance;
+class DeviceBuilder;
 }
 
-class Instance
+class DeviceBuilder
 {
 public:
-    explicit Instance(Impl::Instance && instance) noexcept;
 
-    Instance(const Instance &) = delete;
+public:
+    explicit DeviceBuilder() noexcept;
 
-    Instance(Instance && other) noexcept;
+    DeviceBuilder(const DeviceBuilder & other);
 
-    Instance & operator=(const Instance &) = delete;
+    DeviceBuilder(DeviceBuilder && other) noexcept;
 
-    Instance & operator=(Instance && other) noexcept;
+    DeviceBuilder & operator=(const DeviceBuilder & other);
 
-    ~Instance() noexcept;
+    DeviceBuilder & operator=(DeviceBuilder && other) noexcept;
 
-    [[nodiscard]] Impl::Instance & GetImpl() noexcept;
+    ~DeviceBuilder() noexcept;
+
+    DeviceBuilder & SetPhysicalDevice(PhysicalDevice & physicalDevice) noexcept;
+
+    DeviceBuilder & AddQueues(const QueueFamily & queueFamily, const std::vector<float> & queuePriorities);
+
+    [[nodiscard]] Device Build() const;
+
+    [[nodiscard]] Impl::DeviceBuilder & GetImpl() noexcept;
 
 private:
-    static constexpr auto memorySize      = sizeof(void *);
-    static constexpr auto memoryAlignment = alignof(void *);
+    static constexpr auto memorySize      = sizeof(void *) + sizeof(std::map<int, int>);
+    static constexpr auto memoryAlignment = std::max(alignof(void *), alignof(std::map<int, int>));
 
-    OptimizedPimpl<Impl::Instance, memorySize, memoryAlignment> m_Pimpl;
+    OptimizedPimpl<Impl::DeviceBuilder, memorySize, memoryAlignment> m_Pimpl;
 };
+
 } // namespace CuEngine::Vulkan

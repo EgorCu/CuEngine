@@ -22,39 +22,36 @@
 
 #pragma once
 
-#include <CuEngine/Platform/Window.hpp>
+#include "SystemImpl.hpp"
 
-#include <string>
-#include <vector>
+#include <CuEngine/Platform/SystemBuilder.hpp>
 
-namespace CuEngine::Vulkan
+namespace CuEngine::Platform::Impl
 {
-namespace Impl
-{
-class Instance;
-}
 
-class Instance
+class SystemBuilder
 {
 public:
-    explicit Instance(Impl::Instance && instance) noexcept;
+    SystemBuilder() = default;
 
-    Instance(const Instance &) = delete;
+    SystemBuilder(const SystemBuilder & other) noexcept = default;
 
-    Instance(Instance && other) noexcept;
+    SystemBuilder(SystemBuilder && other) noexcept = default;
 
-    Instance & operator=(const Instance &) = delete;
+    SystemBuilder & operator=(const SystemBuilder & other) noexcept = default;
 
-    Instance & operator=(Instance && other) noexcept;
+    SystemBuilder & operator=(SystemBuilder && other) noexcept = default;
 
-    ~Instance() noexcept;
+    ~SystemBuilder() noexcept = default;
 
-    [[nodiscard]] Impl::Instance & GetImpl() noexcept;
+    [[nodiscard]] System Build() const
+    {
+        if (glfwInit() == GLFW_FALSE)
+        {
+            throw std::runtime_error("Failed to initialize GLFW");
+        }
 
-private:
-    static constexpr auto memorySize      = sizeof(void *);
-    static constexpr auto memoryAlignment = alignof(void *);
-
-    OptimizedPimpl<Impl::Instance, memorySize, memoryAlignment> m_Pimpl;
+        return System();
+    }
 };
-} // namespace CuEngine::Vulkan
+} // namespace CuEngine::Platform::Impl

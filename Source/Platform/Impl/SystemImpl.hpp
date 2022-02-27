@@ -22,39 +22,49 @@
 
 #pragma once
 
-#include <CuEngine/Platform/Window.hpp>
+#include <GLFW/glfw3.h>
 
-#include <string>
-#include <vector>
+#include <CuEngine/Platform/System.hpp>
 
-namespace CuEngine::Vulkan
+#include <stdexcept>
+#include <utility>
+
+namespace CuEngine::Platform::Impl
 {
-namespace Impl
-{
-class Instance;
-}
-
-class Instance
+class System
 {
 public:
-    explicit Instance(Impl::Instance && instance) noexcept;
+    // Shouldn't be thread-safe
+    static inline auto gsSystemRefCounter = 0u;
 
-    Instance(const Instance &) = delete;
+public:
+    explicit System() noexcept
+    {
+        gsSystemRefCounter++;
+    }
 
-    Instance(Instance && other) noexcept;
+    System(const System &) noexcept = delete;
 
-    Instance & operator=(const Instance &) = delete;
+    System(System &&) noexcept
+    {
+        gsSystemRefCounter++;
+    }
 
-    Instance & operator=(Instance && other) noexcept;
+    System & operator=(const System &) noexcept = delete;
 
-    ~Instance() noexcept;
+    System & operator=(System &&) noexcept
+    {
+        gsSystemRefCounter++;
 
-    [[nodiscard]] Impl::Instance & GetImpl() noexcept;
+        return *this;
+    }
 
-private:
-    static constexpr auto memorySize      = sizeof(void *);
-    static constexpr auto memoryAlignment = alignof(void *);
-
-    OptimizedPimpl<Impl::Instance, memorySize, memoryAlignment> m_Pimpl;
+    ~System() noexcept
+    {
+        if ((--gsSystemRefCounter) == 0u)
+        {
+            glfwTerminate();
+        }
+    }
 };
-} // namespace CuEngine::Vulkan
+} // namespace CuEngine::Platform::Impl

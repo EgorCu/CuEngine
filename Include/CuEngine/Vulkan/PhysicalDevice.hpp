@@ -22,11 +22,11 @@
 
 #pragma once
 
-#include <string_view>
-#include <vector>
-
 #include <CuEngine/Utility/OptimizedPimpl.hpp>
 #include <CuEngine/Vulkan/Instance.hpp>
+
+#include <string_view>
+#include <vector>
 
 namespace CuEngine::Vulkan
 {
@@ -38,7 +38,7 @@ class PhysicalDevice;
 class PhysicalDevice
 {
 public:
-    explicit PhysicalDevice(const Impl::PhysicalDevice & other) noexcept;
+    explicit PhysicalDevice(Impl::PhysicalDevice && other) noexcept;
 
     PhysicalDevice(const PhysicalDevice & other) noexcept;
 
@@ -50,19 +50,17 @@ public:
 
     ~PhysicalDevice() noexcept;
 
-    [[nodiscard]] std::string getName() const noexcept;
+    [[nodiscard]] std::string GetName() const;
 
-    [[nodiscard]] Impl::PhysicalDevice & getImpl() noexcept;
+    [[nodiscard]] Impl::PhysicalDevice & GetImpl() noexcept;
 
-    [[nodiscard]] const Impl::PhysicalDevice & getImpl() const noexcept;
+    [[nodiscard]] static std::vector<PhysicalDevice> Enumerate(Instance & instance);
 
 private:
-    static constexpr auto memorySize      = 8u;
-    static constexpr auto memoryAlignment = 8u;
+    static constexpr auto memorySize      = sizeof(void *);
+    static constexpr auto memoryAlignment = alignof(void *);
 
     OptimizedPimpl<Impl::PhysicalDevice, memorySize, memoryAlignment> m_Pimpl;
 };
-
-std::vector<PhysicalDevice> EnumeratePhysicalDevices(const Instance & instance);
 
 } // namespace CuEngine::Vulkan

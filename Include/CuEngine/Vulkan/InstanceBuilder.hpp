@@ -23,6 +23,7 @@
 #pragma once
 
 #include <CuEngine/Platform/Window.hpp>
+#include <CuEngine/Vulkan/Instance.hpp>
 
 #include <string>
 #include <vector>
@@ -31,30 +32,32 @@ namespace CuEngine::Vulkan
 {
 namespace Impl
 {
-class Instance;
+class InstanceBuilder;
 }
 
-class Instance
+class InstanceBuilder
 {
 public:
-    explicit Instance(Impl::Instance && instance) noexcept;
+    InstanceBuilder() noexcept;
 
-    Instance(const Instance &) = delete;
+    InstanceBuilder(const InstanceBuilder &) noexcept;
 
-    Instance(Instance && other) noexcept;
+    InstanceBuilder(InstanceBuilder && other) noexcept;
 
-    Instance & operator=(const Instance &) = delete;
+    InstanceBuilder & operator=(const InstanceBuilder &) noexcept;
 
-    Instance & operator=(Instance && other) noexcept;
+    InstanceBuilder & operator=(InstanceBuilder && other) noexcept;
 
-    ~Instance() noexcept;
+    ~InstanceBuilder() noexcept;
 
-    [[nodiscard]] Impl::Instance & GetImpl() noexcept;
+    [[nodiscard]] Instance Build() const;
+
+    [[nodiscard]] Impl::InstanceBuilder & GetImpl() noexcept;
 
 private:
-    static constexpr auto memorySize      = sizeof(void *);
-    static constexpr auto memoryAlignment = alignof(void *);
+    static constexpr auto memorySize      = sizeof(char);
+    static constexpr auto memoryAlignment = alignof(char);
 
-    OptimizedPimpl<Impl::Instance, memorySize, memoryAlignment> m_Pimpl;
+    OptimizedPimpl<Impl::InstanceBuilder, memorySize, memoryAlignment> m_Pimpl;
 };
 } // namespace CuEngine::Vulkan

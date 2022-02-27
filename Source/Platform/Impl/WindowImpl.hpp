@@ -20,35 +20,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#pragma once
+
 #include <GLFW/glfw3.h>
 
 #include <CuEngine/Platform/Window.hpp>
+
+#include <stdexcept>
+#include <string>
 
 namespace CuEngine::Platform::Impl
 {
 class Window
 {
 public:
-    Window(std::size_t width, std::size_t height, const char * name) : m_Window(nullptr)
-    {
-        if (glfwInit() == GLFW_FALSE)
-        {
-            throw std::runtime_error("Failed to initialize GLFW");
-        }
+    explicit Window(GLFWwindow * window) : m_Window(window)
+    {}
 
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
-        m_Window = glfwCreateWindow(static_cast<int>(width), static_cast<int>(height), name, nullptr, nullptr);
-        if (m_Window == nullptr)
-        {
-            glfwTerminate();
-            throw std::runtime_error("Failed to create a window");
-        }
-    }
+    Window(const Window &) noexcept = delete;
 
     Window(Window && other) noexcept : m_Window(std::exchange(other.m_Window, nullptr))
     {}
+
+    Window & operator=(const Window &) noexcept = delete;
 
     Window & operator=(Window && other) noexcept
     {
@@ -66,21 +60,19 @@ public:
         {
             glfwDestroyWindow(m_Window);
         }
-
-        glfwTerminate();
     }
 
-    [[nodiscard]] bool shouldClose() const noexcept
+    [[nodiscard]] bool ShouldClose() const noexcept
     {
         return glfwWindowShouldClose(m_Window);
     }
 
-    void pollEvents() const noexcept
+    void PollEvents() const noexcept
     {
         glfwPollEvents();
     }
 
-    [[nodiscard]] GLFWwindow * getWindow() const noexcept
+    [[nodiscard]] GLFWwindow * GetWindow() const noexcept
     {
         return m_Window;
     }

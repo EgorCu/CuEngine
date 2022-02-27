@@ -47,9 +47,17 @@ endif ()
 add_executable(CuEngine
         Source/main.cpp
         Source/CuEngine.cpp
+        Source/Platform/System.cpp
+        Source/Platform/SystemBuilder.cpp
         Source/Platform/Window.cpp
+        Source/Platform/WindowBuilder.cpp
         Source/Vulkan/Instance.cpp
+        Source/Vulkan/InstanceBuilder.cpp
         Source/Vulkan/PhysicalDevice.cpp
+        Source/Vulkan/QueueFamily.cpp
+        Source/Vulkan/Device.cpp
+        Source/Vulkan/DeviceBuilder.cpp
         )
 target_include_directories(CuEngine PRIVATE Include)
 target_link_libraries(CuEngine PRIVATE glfw Vulkan::Vulkan)
+target_compile_definitions(CuEngine PRIVATE GLFW_INCLUDE_VULKAN)
