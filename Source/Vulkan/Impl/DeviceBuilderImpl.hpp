@@ -92,6 +92,17 @@ public:
 
         auto deviceFeatures = VkPhysicalDeviceFeatures{};
 
+        auto requiredExtensions = std::vector<const char *>{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+        std::ranges::for_each(
+            requiredExtensions,
+            [supportedExtensions = GetSupportedExtensions()](const auto & extension)
+            {
+                if (std::ranges::end(supportedExtensions) == std::ranges::find(supportedExtensions, extension))
+                {
+                    throw std::runtime_error(std::string("Extension ") + extension + " not supported");
+                }
+            });
+
         auto deviceInfo = VkDeviceCreateInfo{
             .sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
             .pNext                   = nullptr,
@@ -100,8 +111,8 @@ public:
             .pQueueCreateInfos       = queueInfos.data(),
             .enabledLayerCount       = 0,
             .ppEnabledLayerNames     = nullptr,
-            .enabledExtensionCount   = 0,
-            .ppEnabledExtensionNames = nullptr,
+            .enabledExtensionCount   = static_cast<std::uint32_t>(requiredExtensions.size()),
+            .ppEnabledExtensionNames = requiredExtensions.data(),
             .pEnabledFeatures        = &deviceFeatures,
         };
 
@@ -112,6 +123,31 @@ public:
         }
 
         return Device(device);
+    }
+
+private:
+    [[nodiscard]] std::vector<std::string> GetSupportedExtensions() const
+    {
+        auto count = std::uint32_t();
+        if (vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &count, nullptr) != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to get supported Vulkan Device extensions");
+        }
+
+        auto properties = std::vector<VkExtensionProperties>(count);
+        if (vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &count, properties.data()) != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to get supported Vulkan Device extensions");
+        }
+
+        auto extensions = std::vector<std::string>(count);
+        std::ranges::transform(properties, extensions.begin(),
+                               [](const auto & property)
+                               {
+                                   return std::string(property.extensionName);
+                               });
+
+        return extensions;
     }
 
 private:
