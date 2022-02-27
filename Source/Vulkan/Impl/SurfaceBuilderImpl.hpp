@@ -24,47 +24,57 @@
 
 #include <vulkan/vulkan.h>
 
-#include "PhysicalDeviceImpl.hpp"
-#include "QueueFamilyImpl.hpp"
+#include "../../Platform/Impl/WindowImpl.hpp"
+#include "InstanceImpl.hpp"
+#include "SurfaceImpl.hpp"
 
-#include <CuEngine/Vulkan/Device.hpp>
+#include <CuEngine/Vulkan/SurfaceBuilder.hpp>
 
 namespace CuEngine::Vulkan::Impl
 {
-class Device
+class SurfaceBuilder
 {
 public:
-    explicit Device(VkDevice device) noexcept : m_Handle(device)
+    explicit SurfaceBuilder() noexcept : m_Instance(VK_NULL_HANDLE), m_Window(nullptr)
     {}
 
-    Device(const Device & other) = delete;
+    SurfaceBuilder(const SurfaceBuilder & other) = default;
 
-    Device(Device && other) noexcept : m_Handle(std::exchange(other.m_Handle, VK_NULL_HANDLE))
-    {}
+    SurfaceBuilder(SurfaceBuilder && other) noexcept = default;
 
-    Device & operator=(const Device & other) = delete;
+    SurfaceBuilder & operator=(const SurfaceBuilder & other) = default;
 
-    Device & operator=(Device && other) noexcept
+    SurfaceBuilder & operator=(SurfaceBuilder && other) noexcept = default;
+
+    ~SurfaceBuilder() noexcept = default;
+
+    SurfaceBuilder & SetInstance(Instance & instance) noexcept
     {
-        if (this != &other)
-        {
-            std::swap(m_Handle, other.m_Handle);
-        }
+        m_Instance = instance.GetHandle();
 
         return *this;
     }
 
-    ~Device() noexcept
+    SurfaceBuilder & SetWindow(Platform::Impl::Window & window) noexcept
     {
-        vkDestroyDevice(m_Handle, nullptr);
+        m_Window = window.GetWindow();
+
+        return *this;
     }
 
-    [[nodiscard]] VkDevice GetHandle() const noexcept
+    [[nodiscard]] Surface Build() const
     {
-        return m_Handle;
+        auto surface = VkSurfaceKHR(VK_NULL_HANDLE);
+        if (glfwCreateWindowSurface(m_Instance, m_Window, nullptr, &surface) != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to create Vulkan surface");
+        }
+
+        return Surface(surface, m_Instance);
     }
 
 private:
-    VkDevice m_Handle;
+    VkInstance   m_Instance;
+    GLFWwindow * m_Window;
 };
 } // namespace CuEngine::Vulkan::Impl

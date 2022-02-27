@@ -20,39 +20,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
-
-#include <CuEngine/Utility/OptimizedPimpl.hpp>
+#include "Impl/QueueImpl.hpp"
 
 namespace CuEngine::Vulkan
 {
-namespace Impl
+
+Queue::Queue(Impl::Queue && queue) noexcept : m_Pimpl(std::move(queue))
+{}
+
+Queue::Queue(Queue && other) noexcept = default;
+
+Queue & Queue::operator=(Queue && other) noexcept = default;
+
+Queue::~Queue() noexcept = default;
+
+Impl::Queue & Queue::getImpl() noexcept
 {
-class Device;
+    return *m_Pimpl;
 }
 
-class Device
+[[nodiscard]] Queue Queue::Get(Device & device, QueueFamily & queueFamily, std::uint32_t queueIndex)
 {
-public:
-    explicit Device(Impl::Device && device) noexcept;
-
-    Device(const Device &) noexcept = delete;
-
-    Device(Device && other) noexcept;
-
-    Device & operator=(const Device &) noexcept = delete;
-
-    Device & operator=(Device && other) noexcept;
-
-    ~Device() noexcept;
-
-    [[nodiscard]] Impl::Device & getImpl() noexcept;
-
-private:
-    static constexpr auto memorySize      = sizeof(void *);
-    static constexpr auto memoryAlignment = alignof(void *);
-
-    OptimizedPimpl<Impl::Device, memorySize, memoryAlignment> m_Pimpl;
-};
+    return Queue(Impl::Queue::Get(device.getImpl(), queueFamily.GetImpl(), queueIndex));
+}
 
 } // namespace CuEngine::Vulkan

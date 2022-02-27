@@ -28,31 +28,31 @@ namespace CuEngine::Vulkan
 {
 namespace Impl
 {
-class Device;
+class Surface;
 }
 
-class Device
+class Surface
 {
 public:
-    explicit Device(Impl::Device && device) noexcept;
+    explicit Surface(Impl::Surface && surface) noexcept;
 
-    Device(const Device &) noexcept = delete;
+    Surface(const Surface &) noexcept = delete;
 
-    Device(Device && other) noexcept;
+    Surface(Surface && other) noexcept;
 
-    Device & operator=(const Device &) noexcept = delete;
+    Surface & operator=(const Surface &) noexcept = delete;
 
-    Device & operator=(Device && other) noexcept;
+    Surface & operator=(Surface && other) noexcept;
 
-    ~Device() noexcept;
+    ~Surface() noexcept;
 
-    [[nodiscard]] Impl::Device & getImpl() noexcept;
+    [[nodiscard]] Impl::Surface & getImpl() noexcept;
 
 private:
-    static constexpr auto memorySize      = sizeof(void *);
+    static constexpr auto memorySize      = sizeof(void *) * 2;
     static constexpr auto memoryAlignment = alignof(void *);
 
-    OptimizedPimpl<Impl::Device, memorySize, memoryAlignment> m_Pimpl;
+    OptimizedPimpl<Impl::Surface, memorySize, memoryAlignment> m_Pimpl;
 };
 
 } // namespace CuEngine::Vulkan

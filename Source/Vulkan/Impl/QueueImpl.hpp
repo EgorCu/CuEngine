@@ -22,37 +22,40 @@
 
 #pragma once
 
-#include <CuEngine/Utility/OptimizedPimpl.hpp>
+#include <vulkan/vulkan.h>
 
-namespace CuEngine::Vulkan
-{
-namespace Impl
-{
-class Device;
-}
+#include "DeviceImpl.hpp"
+#include "QueueFamilyImpl.hpp"
 
-class Device
+#include <CuEngine/Vulkan/Queue.hpp>
+
+namespace CuEngine::Vulkan::Impl
+{
+class Queue
 {
 public:
-    explicit Device(Impl::Device && device) noexcept;
+    explicit Queue(VkQueue queue) noexcept : m_Handle(queue)
+    {}
 
-    Device(const Device &) noexcept = delete;
+    Queue(const Queue & other) = default;
 
-    Device(Device && other) noexcept;
+    Queue(Queue && other) noexcept = default;
 
-    Device & operator=(const Device &) noexcept = delete;
+    Queue & operator=(const Queue & other) = default;
 
-    Device & operator=(Device && other) noexcept;
+    Queue & operator=(Queue && other) noexcept = default;
 
-    ~Device() noexcept;
+    ~Queue() noexcept = default;
 
-    [[nodiscard]] Impl::Device & getImpl() noexcept;
+    [[nodiscard]] static Queue Get(Device & device, QueueFamily & queueFamily, std::uint32_t queueIndex)
+    {
+        auto queue = VkQueue(VK_NULL_HANDLE);
+        vkGetDeviceQueue(device.GetHandle(), queueFamily.GetIndex(), queueIndex, &queue);
+
+        return Queue(queue);
+    }
 
 private:
-    static constexpr auto memorySize      = sizeof(void *);
-    static constexpr auto memoryAlignment = alignof(void *);
-
-    OptimizedPimpl<Impl::Device, memorySize, memoryAlignment> m_Pimpl;
+    VkQueue m_Handle;
 };
-
-} // namespace CuEngine::Vulkan
+} // namespace CuEngine::Vulkan::Impl

@@ -20,39 +20,43 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
-
-#include <CuEngine/Utility/OptimizedPimpl.hpp>
+#include "Impl/SurfaceBuilderImpl.hpp"
 
 namespace CuEngine::Vulkan
 {
-namespace Impl
+SurfaceBuilder::SurfaceBuilder() noexcept = default;
+
+SurfaceBuilder::SurfaceBuilder(const SurfaceBuilder & other) = default;
+
+SurfaceBuilder::SurfaceBuilder(SurfaceBuilder && other) noexcept = default;
+
+SurfaceBuilder & SurfaceBuilder::operator=(const SurfaceBuilder & other) = default;
+
+SurfaceBuilder & SurfaceBuilder::operator=(SurfaceBuilder && other) noexcept = default;
+
+SurfaceBuilder::~SurfaceBuilder() noexcept = default;
+
+SurfaceBuilder & SurfaceBuilder::SetInstance(Instance & instance) noexcept
 {
-class Device;
+    m_Pimpl->SetInstance(instance.GetImpl());
+
+    return *this;
 }
 
-class Device
+SurfaceBuilder & SurfaceBuilder::SetWindow(Platform::Window & window) noexcept
 {
-public:
-    explicit Device(Impl::Device && device) noexcept;
+    m_Pimpl->SetWindow(window.GetImpl());
 
-    Device(const Device &) noexcept = delete;
+    return *this;
+}
 
-    Device(Device && other) noexcept;
+Surface SurfaceBuilder::Build() const
+{
+    return Surface(m_Pimpl->Build());
+}
 
-    Device & operator=(const Device &) noexcept = delete;
-
-    Device & operator=(Device && other) noexcept;
-
-    ~Device() noexcept;
-
-    [[nodiscard]] Impl::Device & getImpl() noexcept;
-
-private:
-    static constexpr auto memorySize      = sizeof(void *);
-    static constexpr auto memoryAlignment = alignof(void *);
-
-    OptimizedPimpl<Impl::Device, memorySize, memoryAlignment> m_Pimpl;
-};
-
+Impl::SurfaceBuilder & SurfaceBuilder::GetImpl() noexcept
+{
+    return *m_Pimpl;
+}
 } // namespace CuEngine::Vulkan

@@ -22,37 +22,55 @@
 
 #pragma once
 
-#include <CuEngine/Utility/OptimizedPimpl.hpp>
+#include <vulkan/vulkan.h>
 
-namespace CuEngine::Vulkan
-{
-namespace Impl
-{
-class Device;
-}
+#include "InstanceImpl.hpp"
 
-class Device
+#include <CuEngine/Vulkan/Surface.hpp>
+
+namespace CuEngine::Vulkan::Impl
+{
+class Surface
 {
 public:
-    explicit Device(Impl::Device && device) noexcept;
+    explicit Surface(VkSurfaceKHR surface, VkInstance instance) noexcept : m_Handle(surface), m_InstanceHandle(instance)
+    {}
 
-    Device(const Device &) noexcept = delete;
+    Surface(const Surface & other) = delete;
 
-    Device(Device && other) noexcept;
+    Surface(Surface && other) noexcept
+        : m_Handle(std::exchange(other.m_Handle, VK_NULL_HANDLE)),
+          m_InstanceHandle(std::exchange(other.m_InstanceHandle, VK_NULL_HANDLE))
+    {}
 
-    Device & operator=(const Device &) noexcept = delete;
+    Surface & operator=(const Surface & other) = delete;
 
-    Device & operator=(Device && other) noexcept;
+    Surface & operator=(Surface && other) noexcept
+    {
+        if (this != &other)
+        {
+            std::swap(m_Handle, other.m_Handle);
+            std::swap(m_InstanceHandle, other.m_InstanceHandle);
+        }
 
-    ~Device() noexcept;
+        return *this;
+    }
 
-    [[nodiscard]] Impl::Device & getImpl() noexcept;
+    ~Surface() noexcept
+    {
+        if (m_Handle)
+        {
+            vkDestroySurfaceKHR(m_InstanceHandle, m_Handle, nullptr);
+        }
+    }
+
+    [[nodiscard]] VkSurfaceKHR GetHandle() const noexcept
+    {
+        return m_Handle;
+    }
 
 private:
-    static constexpr auto memorySize      = sizeof(void *);
-    static constexpr auto memoryAlignment = alignof(void *);
-
-    OptimizedPimpl<Impl::Device, memorySize, memoryAlignment> m_Pimpl;
+    VkSurfaceKHR m_Handle;
+    VkInstance   m_InstanceHandle;
 };
-
-} // namespace CuEngine::Vulkan
+} // namespace CuEngine::Vulkan::Impl

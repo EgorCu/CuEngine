@@ -23,36 +23,40 @@
 #pragma once
 
 #include <CuEngine/Utility/OptimizedPimpl.hpp>
+#include <CuEngine/Vulkan/Device.hpp>
+#include <CuEngine/Vulkan/QueueFamily.hpp>
 
 namespace CuEngine::Vulkan
 {
 namespace Impl
 {
-class Device;
+class Queue;
 }
 
-class Device
+class Queue
 {
 public:
-    explicit Device(Impl::Device && device) noexcept;
+    explicit Queue(Impl::Queue && device) noexcept;
 
-    Device(const Device &) noexcept = delete;
+    Queue(const Queue &) noexcept = delete;
 
-    Device(Device && other) noexcept;
+    Queue(Queue && other) noexcept;
 
-    Device & operator=(const Device &) noexcept = delete;
+    Queue & operator=(const Queue &) noexcept = delete;
 
-    Device & operator=(Device && other) noexcept;
+    Queue & operator=(Queue && other) noexcept;
 
-    ~Device() noexcept;
+    ~Queue() noexcept;
 
-    [[nodiscard]] Impl::Device & getImpl() noexcept;
+    [[nodiscard]] Impl::Queue & getImpl() noexcept;
+
+    [[nodiscard]] static Queue Get(Device & device, QueueFamily & queueFamily, std::uint32_t queueIndex);
 
 private:
     static constexpr auto memorySize      = sizeof(void *);
     static constexpr auto memoryAlignment = alignof(void *);
 
-    OptimizedPimpl<Impl::Device, memorySize, memoryAlignment> m_Pimpl;
+    OptimizedPimpl<Impl::Queue, memorySize, memoryAlignment> m_Pimpl;
 };
 
 } // namespace CuEngine::Vulkan

@@ -22,37 +22,48 @@
 
 #pragma once
 
+#include <CuEngine/Platform/Window.hpp>
 #include <CuEngine/Utility/OptimizedPimpl.hpp>
+#include <CuEngine/Vulkan/Instance.hpp>
+#include <CuEngine/Vulkan/Surface.hpp>
 
 namespace CuEngine::Vulkan
 {
 namespace Impl
 {
-class Device;
+class SurfaceBuilder;
 }
 
-class Device
+class SurfaceBuilder
 {
 public:
-    explicit Device(Impl::Device && device) noexcept;
 
-    Device(const Device &) noexcept = delete;
+public:
+    explicit SurfaceBuilder() noexcept;
 
-    Device(Device && other) noexcept;
+    SurfaceBuilder(const SurfaceBuilder & other);
 
-    Device & operator=(const Device &) noexcept = delete;
+    SurfaceBuilder(SurfaceBuilder && other) noexcept;
 
-    Device & operator=(Device && other) noexcept;
+    SurfaceBuilder & operator=(const SurfaceBuilder & other);
 
-    ~Device() noexcept;
+    SurfaceBuilder & operator=(SurfaceBuilder && other) noexcept;
 
-    [[nodiscard]] Impl::Device & getImpl() noexcept;
+    ~SurfaceBuilder() noexcept;
+
+    SurfaceBuilder & SetInstance(Instance & instance) noexcept;
+
+    SurfaceBuilder & SetWindow(Platform::Window & window) noexcept;
+
+    [[nodiscard]] Surface Build() const;
+
+    [[nodiscard]] Impl::SurfaceBuilder & GetImpl() noexcept;
 
 private:
-    static constexpr auto memorySize      = sizeof(void *);
+    static constexpr auto memorySize      = sizeof(void *) * 2;
     static constexpr auto memoryAlignment = alignof(void *);
 
-    OptimizedPimpl<Impl::Device, memorySize, memoryAlignment> m_Pimpl;
+    OptimizedPimpl<Impl::SurfaceBuilder, memorySize, memoryAlignment> m_Pimpl;
 };
 
 } // namespace CuEngine::Vulkan

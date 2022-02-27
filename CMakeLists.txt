@@ -57,6 +57,9 @@ add_executable(CuEngine
         Source/Vulkan/QueueFamily.cpp
         Source/Vulkan/Device.cpp
         Source/Vulkan/DeviceBuilder.cpp
+        Source/Vulkan/Queue.cpp
+        Source/Vulkan/Surface.cpp
+        Source/Vulkan/SurfaceBuilder.cpp
         )
 target_include_directories(CuEngine PRIVATE Include)
 target_link_libraries(CuEngine PRIVATE glfw Vulkan::Vulkan)

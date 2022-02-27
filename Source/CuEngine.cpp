@@ -26,7 +26,9 @@
 #include <CuEngine/Vulkan/DeviceBuilder.hpp>
 #include <CuEngine/Vulkan/InstanceBuilder.hpp>
 #include <CuEngine/Vulkan/PhysicalDevice.hpp>
+#include <CuEngine/Vulkan/Queue.hpp>
 #include <CuEngine/Vulkan/QueueFamily.hpp>
+#include <CuEngine/Vulkan/SurfaceBuilder.hpp>
 
 #include <algorithm>
 #include <iostream>
@@ -39,20 +41,26 @@ static Platform::Window CreateWindow(Platform::System & system);
 
 static Vulkan::Instance CreateInstance();
 
-static Vulkan::PhysicalDevice FindSuitableDevice(Vulkan::Instance & instance);
+static std::tuple<Vulkan::PhysicalDevice, Vulkan::QueueFamily> FindSuitableDevice(Vulkan::Instance & instance);
 
-static Vulkan::Device CreateDevice(Vulkan::PhysicalDevice & physicalDevice);
+static Vulkan::Device CreateDevice(Vulkan::PhysicalDevice & physicalDevice, Vulkan::QueueFamily & queueFamily);
+
+static Vulkan::Queue GetQueue(Vulkan::Device & device, Vulkan::QueueFamily & queueFamily);
+
+static Vulkan::Surface CreateSurface(Vulkan::Instance & instance, Platform::Window & window);
 
 int Application::Run() noexcept
 {
 
     try
     {
-        auto system         = CreateSystem();
-        auto window         = CreateWindow(system);
-        auto instance       = CreateInstance();
-        auto physicalDevice = FindSuitableDevice(instance);
-        auto device         = CreateDevice(physicalDevice);
+        auto system                        = CreateSystem();
+        auto window                        = CreateWindow(system);
+        auto instance                      = CreateInstance();
+        auto surface                       = CreateSurface(instance, window);
+        auto [physicalDevice, queueFamily] = FindSuitableDevice(instance);
+        auto device                        = CreateDevice(physicalDevice, queueFamily);
+        auto queue                         = GetQueue(device, queueFamily);
 
         std::cout << "Found: " << physicalDevice.GetName() << std::endl;
 
@@ -89,10 +97,9 @@ static Vulkan::Instance CreateInstance()
     return Vulkan::InstanceBuilder().Build();
 }
 
-static Vulkan::PhysicalDevice FindSuitableDevice(Vulkan::Instance & instance)
+static std::tuple<Vulkan::PhysicalDevice, Vulkan::QueueFamily> FindSuitableDevice(Vulkan::Instance & instance)
 {
     auto physicalDevices = Vulkan::PhysicalDevice::Enumerate(instance);
-
     auto suitableDeviceIt =
         std::ranges::find_if(physicalDevices,
                              [](auto & device)
@@ -108,24 +115,40 @@ static Vulkan::PhysicalDevice FindSuitableDevice(Vulkan::Instance & instance)
     {
         throw std::runtime_error("Failed to find a suitable Vulkan device");
     }
+    auto suitableDevice = *suitableDeviceIt;
 
-    return *suitableDeviceIt;
+    auto queueFamilies         = Vulkan::QueueFamily::Enumerate(suitableDevice);
+    auto suitableQueueFamilyIt = std::ranges::find_if(queueFamilies,
+                                                      [](const auto & queueFamily)
+                                                      {
+                                                          return queueFamily.HasGraphicsSupport();
+                                                      });
+
+    if (std::end(queueFamilies) == suitableQueueFamilyIt)
+    {
+        throw std::runtime_error("Failed to find a suitable Vulkan queue family");
+    }
+    auto suitableQueueFamily = *suitableQueueFamilyIt;
+
+    return std::forward_as_tuple(std::move(suitableDevice), std::move(suitableQueueFamily));
 }
 
-static Vulkan::Device CreateDevice(Vulkan::PhysicalDevice & physicalDevice)
+static Vulkan::Device CreateDevice(Vulkan::PhysicalDevice & physicalDevice, Vulkan::QueueFamily & queueFamily)
 {
-    auto queueFamilies = Vulkan::QueueFamily::Enumerate(physicalDevice);
-
-    auto graphicsQueueIt = std::ranges::find_if(queueFamilies,
-                                                [](const auto & queueFamily)
-                                                {
-                                                    return queueFamily.HasGraphicsSupport();
-                                                });
-
     return Vulkan::DeviceBuilder()
         .SetPhysicalDevice(physicalDevice)
-        .AddQueues(*graphicsQueueIt, std::vector<float>{ 1.0 })
+        .AddQueues(queueFamily, std::vector<float>{ 1.0 })
         .Build();
 }
+
+static Vulkan::Queue GetQueue(Vulkan::Device & device, Vulkan::QueueFamily & queueFamily)
+{
+    return Vulkan::Queue::Get(device, queueFamily, 0);
+}
+
+static Vulkan::Surface CreateSurface(Vulkan::Instance & instance, Platform::Window & window)
+{
+    return Vulkan::SurfaceBuilder().SetInstance(instance).SetWindow(window).Build();
+};
 
 } // namespace CuEngine
