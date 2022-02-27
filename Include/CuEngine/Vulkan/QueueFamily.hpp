@@ -24,6 +24,7 @@
 
 #include <CuEngine/Utility/OptimizedPimpl.hpp>
 #include <CuEngine/Vulkan/PhysicalDevice.hpp>
+#include <CuEngine/Vulkan/Surface.hpp>
 
 #include <string_view>
 #include <vector>
@@ -52,15 +53,19 @@ public:
 
     [[nodiscard]] bool HasGraphicsSupport() const noexcept;
 
+    [[nodiscard]] bool HasSurfaceSupport(Surface & surface) const;
+
     [[nodiscard]] Impl::QueueFamily & GetImpl() noexcept;
 
     [[nodiscard]] const Impl::QueueFamily & GetImpl() const noexcept;
 
+    [[nodiscard]] bool operator<(const QueueFamily & queueFamily) const noexcept;
+
     [[nodiscard]] static std::vector<QueueFamily> Enumerate(PhysicalDevice & queueFamiliesProperty);
 
 private:
-    static constexpr auto memorySize      = 28u;
-    static constexpr auto memoryAlignment = 4u;
+    static constexpr auto memorySize      = sizeof(void *) + sizeof(std::uint32_t) * 2;
+    static constexpr auto memoryAlignment = alignof(void *);
 
     OptimizedPimpl<Impl::QueueFamily, memorySize, memoryAlignment> m_Pimpl;
 };

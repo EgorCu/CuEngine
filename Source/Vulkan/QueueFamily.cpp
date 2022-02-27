@@ -45,6 +45,11 @@ bool QueueFamily::HasGraphicsSupport() const noexcept
     return m_Pimpl->HasGraphicsSupport();
 }
 
+[[nodiscard]] bool QueueFamily::HasSurfaceSupport(Surface & surface) const
+{
+    return m_Pimpl->HasSurfaceSupport(surface.getImpl());
+}
+
 Impl::QueueFamily & QueueFamily::GetImpl() noexcept
 {
     return *m_Pimpl;
@@ -53,6 +58,11 @@ Impl::QueueFamily & QueueFamily::GetImpl() noexcept
 const Impl::QueueFamily & QueueFamily::GetImpl() const noexcept
 {
     return *m_Pimpl;
+}
+
+bool QueueFamily::operator<(const QueueFamily & queueFamily) const noexcept
+{
+    return this->GetImpl() < queueFamily.GetImpl();
 }
 
 std::vector<QueueFamily> QueueFamily::Enumerate(PhysicalDevice & device)
@@ -66,9 +76,10 @@ std::vector<QueueFamily> QueueFamily::Enumerate(PhysicalDevice & device)
     auto queueFamilies = std::vector<QueueFamily>();
     queueFamilies.reserve(count);
     std::ranges::transform(queueFamiliesPointers, std::back_inserter(queueFamilies),
-                           [index = 0](auto queueFamiliesProperty) mutable
+                           [&device, index = 0](auto queueFamiliesProperty) mutable
                            {
-                               return QueueFamily(Impl::QueueFamily(queueFamiliesProperty, index));
+                               return QueueFamily(Impl::QueueFamily(device.GetImpl().GetHandle(),
+                                                                    queueFamiliesProperty.queueFlags, index));
                            });
 
     return queueFamilies;

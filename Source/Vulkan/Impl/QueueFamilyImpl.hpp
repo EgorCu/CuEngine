@@ -25,6 +25,7 @@
 #include <vulkan/vulkan.h>
 
 #include "PhysicalDeviceImpl.hpp"
+#include "SurfaceImpl.hpp"
 
 #include <CuEngine/Vulkan/QueueFamily.hpp>
 
@@ -33,13 +34,24 @@ namespace CuEngine::Vulkan::Impl
 class QueueFamily
 {
 public:
-    explicit QueueFamily(const VkQueueFamilyProperties & properties, std::uint32_t index) noexcept
-        : m_Properties(properties), m_Index(index)
+    explicit QueueFamily(VkPhysicalDevice device, const VkQueueFlags & flags, std::uint32_t index) noexcept
+        : m_Device(device), m_Flags(flags), m_Index(index)
     {}
 
     [[nodiscard]] bool HasGraphicsSupport() const noexcept
     {
-        return m_Properties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
+        return m_Flags & VK_QUEUE_GRAPHICS_BIT;
+    }
+
+    [[nodiscard]] bool HasSurfaceSupport(Surface & surface) const
+    {
+        auto isCapable = VkBool32(VK_FALSE);
+        if (vkGetPhysicalDeviceSurfaceSupportKHR(m_Device, m_Index, surface.GetHandle(), &isCapable) != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to check Surface support");
+        }
+
+        return isCapable == VK_TRUE;
     }
 
     [[nodiscard]] bool GetIndex() const noexcept
@@ -53,7 +65,8 @@ public:
     }
 
 private:
-    VkQueueFamilyProperties m_Properties;
-    std::uint32_t           m_Index;
+    VkPhysicalDevice m_Device;
+    VkQueueFlags     m_Flags;
+    std::uint32_t    m_Index;
 };
 } // namespace CuEngine::Vulkan::Impl
